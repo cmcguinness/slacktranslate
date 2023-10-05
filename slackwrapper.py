@@ -16,8 +16,9 @@ class SlackWrapper:
 
     # Lookup a user's name from their id
     def get_user_name(self, id:str):
-        payload = {'token': self.slack_token, 'user': id}
-        resp = requests.post('https://slack.com/api/users.info', data=payload)
+        payload = {'user': id}
+        headers = {'Authorization' : 'Bearer '+self.slack_token, 'Content-type': 'application/json'}
+        resp = requests.post('https://slack.com/api/users.info', data=payload, headers=headers)
         data = json.loads(resp.content)
         if 'user' in data and 'name' in data['user']:
             return data['user']['name']
