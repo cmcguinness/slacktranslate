@@ -19,7 +19,9 @@ class SlackWrapper:
         payload = {'token': self.slack_token, 'user': id}
         resp = requests.post('https://slack.com/api/users.info', data=payload)
         data = json.loads(resp.content)
-        return data['user']['name']
+        if 'user' in data and 'name' in data['user']:
+            return data['user']['name']
+        return '-system-'
 
     # Take a line of text with 0 or more embedded <@id> in it and expand the
     # ids to user names
