@@ -29,8 +29,15 @@ def slack_events():
         return data['challenge']
 
     if 'event' in data:
+        event = data['event']
+
+        # ignore system / bot messages
+        if 'user' not in event:
+            return ''
+
+
         sl = SlackWrapper()
-        sl.handle_event(data['event'])
+        sl.handle_event(event)
 
     return ''
 
