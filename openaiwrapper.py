@@ -1,6 +1,6 @@
 import openai
 import os
-
+import time
 class OpenAIWrapper:
     def __init__(self):
         openai.api_key = os.getenv('OPENAI_API_KEY')
@@ -17,17 +17,33 @@ class OpenAIWrapper:
         return trimmed
 
     def call_openai(self, system_prompt, user_prompt):
-        completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            temperature=0.1,
-            messages=[
-                {"role": "system",
-                 "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ]
-        )
-        response = completion.choices[0].message["content"]
-        return response
+        try:
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                temperature=0.1,
+                messages=[
+                    {"role": "system",
+                     "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ]
+            )
+            response = completion.choices[0].message["content"]
+            return response
+        except openai.error.ServiceUnavailableError as e:
+            print('call_openai(): ServiceUnavailableError', flush=True)
+            # Snooze and try again
+            time.sleep(1)
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                temperature=0.1,
+                messages=[
+                    {"role": "system",
+                     "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ]
+            )
+            response = completion.choices[0].message["content"]
+            return response
 
     def to_english(self, text):
         system_prompt = self.prompt_trim(
