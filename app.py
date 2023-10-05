@@ -33,6 +33,7 @@ def slack_events():
 
         # ignore system / bot messages
         if 'user' not in event:
+            print('Ignoring bot message', flush=True)
             return ''
 
 
