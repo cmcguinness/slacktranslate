@@ -86,11 +86,15 @@ class SlackWrapper:
         if c not in [self.channel_english, self.channel_spanish]:
             return ''
 
+        if 'user' not in event:
+            # system message
+            return ''
+
         # Make sure there's something to translate
         if 'text' not in event or len(event['text'].strip()) == 0:
             return ''
 
-        to_language = ['english', 'spanish'][c == self.channel_spanish]
+        to_language = ['english', 'spanish'][c != self.channel_spanish]
 
         th = Thread(target=self.do_translate, args=(to_language, event['text'], event['user']))
         th.start()
