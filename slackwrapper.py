@@ -1,3 +1,14 @@
+"""
+    SlackWrapper
+
+    This handles the incoming message events from Slack by:
+
+    1.  Determining if we need to translate the message
+    2.  Converting user ids in the message to names
+    3.  Sending the text out to get translated
+    4.  Posting the translated text into the "other" channel
+
+"""
 import os
 import requests
 import json
@@ -5,6 +16,9 @@ from openaiwrapper import OpenAIWrapper
 from threading import Thread
 
 class SlackWrapper:
+
+    #   Init is responsible for fetching the environment variables that have
+    #   API keys, endpoints, and channel ids for our particular org
     def __init__(self):
         self.channel_english = os.getenv('SLACK_ENG_CHAN_ID')
         self.channel_spanish = os.getenv('SLACK_ESP_CHAN_ID')
@@ -12,14 +26,19 @@ class SlackWrapper:
         self.post_english = os.getenv('SLACK_ENG_URL')
         self.post_spanish = os.getenv('SLACK_ESP_URL')
 
-        return
 
     # Lookup a user's name from their id
     def get_user_name(self, id:str):
         payload = {'token': self.slack_token, 'user': id}
+        print(self.slack_token[:10], flush=True)
         resp = requests.post('https://slack.com/api/users.info', data=payload)
+        print(resp, flush=True)
         data = json.loads(resp.content)
-        return data['user']['name']
+        if 'error' in data:
+            print(f'get_user_name({id}): Error {data["error"]}', flush=True)
+        if 'user' in data and 'name' in data['user']:
+            return data['user']['name']
+        return '-system-'
 
     # Take a line of text with 0 or more embedded <@id> in it and expand the
     # ids to user names
@@ -27,7 +46,7 @@ class SlackWrapper:
         result = ''
 
         while (loc := text.find('<@')) != -1:
-            result = text[:loc] + '@'
+            result = result + text[:loc] + '@'
             text = text[loc + 2:]
             end = text.find('>')
             if end == -1:
@@ -84,11 +103,15 @@ class SlackWrapper:
         if c not in [self.channel_english, self.channel_spanish]:
             return ''
 
+        if 'user' not in event:
+            # system message
+            return ''
+
         # Make sure there's something to translate
         if 'text' not in event or len(event['text'].strip()) == 0:
             return ''
 
-        to_language = ['english', 'spanish'][c == self.channel_spanish]
+        to_language = ['english', 'spanish'][c != self.channel_spanish]
 
         th = Thread(target=self.do_translate, args=(to_language, event['text'], event['user']))
         th.start()

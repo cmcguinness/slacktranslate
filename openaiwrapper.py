@@ -1,6 +1,6 @@
 import openai
 import os
-
+import time
 class OpenAIWrapper:
     def __init__(self):
         openai.api_key = os.getenv('OPENAI_API_KEY')
@@ -17,17 +17,44 @@ class OpenAIWrapper:
         return trimmed
 
     def call_openai(self, system_prompt, user_prompt):
-        completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            temperature=0.1,
-            messages=[
-                {"role": "system",
-                 "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ]
+
+        # First step, determine moderation status of message and
+        # suppress it if it's not good
+        response = openai.Moderation.create(
+            input=user_prompt
         )
-        response = completion.choices[0].message["content"]
-        return response
+        output = response["results"][0]
+        if output['flagged']:
+            return 'This message has failed moderation'
+
+
+        try:
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                temperature=0.1,
+                messages=[
+                    {"role": "system",
+                     "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ]
+            )
+            response = completion.choices[0].message["content"]
+            return response
+        except openai.error.ServiceUnavailableError as e:
+            print('call_openai(): ServiceUnavailableError', flush=True)
+            # Snooze and try again
+            time.sleep(1)
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                temperature=0.1,
+                messages=[
+                    {"role": "system",
+                     "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ]
+            )
+            response = completion.choices[0].message["content"]
+            return response
 
     def to_english(self, text):
         system_prompt = self.prompt_trim(

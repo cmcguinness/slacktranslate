@@ -1,13 +1,8 @@
 from flask import Flask, request
 from slackwrapper import SlackWrapper
-from openaiwrapper import OpenAIWrapper
-
 import json
 
-
-
 app = Flask(__name__)
-
 
 @app.route('/')
 def hello_world():
@@ -30,8 +25,16 @@ def slack_events():
         return data['challenge']
 
     if 'event' in data:
+        event = data['event']
+
+        # ignore system / bot messages
+        if 'user' not in event:
+            print('Ignoring bot message', flush=True)
+            return ''
+
+
         sl = SlackWrapper()
-        sl.handle_event(data['event'])
+        sl.handle_event(event)
 
     return ''
 
