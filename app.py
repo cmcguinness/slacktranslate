@@ -1,6 +1,5 @@
 from flask import Flask, request
 from slackwrapper import SlackWrapper
-from openaiwrapper import OpenAIWrapper
 
 import json
 
