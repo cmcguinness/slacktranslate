@@ -22,7 +22,7 @@ class SlackWrapper:
         print(resp, flush=True)
         data = json.loads(resp.content)
         if 'error' in data:
-            print('get_user_name: Error '+data['error'], flush=True)
+            print(f'get_user_name({id}): Error {data["error"]}', flush=True)
         if 'user' in data and 'name' in data['user']:
             return data['user']['name']
         return '-system-'
