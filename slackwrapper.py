@@ -33,7 +33,7 @@ class SlackWrapper:
         result = ''
 
         while (loc := text.find('<@')) != -1:
-            result = text[:loc] + '@'
+            result = result + text[:loc] + '@'
             text = text[loc + 2:]
             end = text.find('>')
             if end == -1:
