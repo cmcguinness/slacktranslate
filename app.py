@@ -1,12 +1,8 @@
 from flask import Flask, request
 from slackwrapper import SlackWrapper
-
 import json
 
-
-
 app = Flask(__name__)
-
 
 @app.route('/')
 def hello_world():

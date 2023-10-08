@@ -1,3 +1,14 @@
+"""
+    SlackWrapper
+
+    This handles the incoming message events from Slack by:
+
+    1.  Determining if we need to translate the message
+    2.  Converting user ids in the message to names
+    3.  Sending the text out to get translated
+    4.  Posting the translated text into the "other" channel
+
+"""
 import os
 import requests
 import json
@@ -5,6 +16,9 @@ from openaiwrapper import OpenAIWrapper
 from threading import Thread
 
 class SlackWrapper:
+
+    #   Init is responsible for fetching the environment variables that have
+    #   API keys, endpoints, and channel ids for our particular org
     def __init__(self):
         self.channel_english = os.getenv('SLACK_ENG_CHAN_ID')
         self.channel_spanish = os.getenv('SLACK_ESP_CHAN_ID')
@@ -12,7 +26,6 @@ class SlackWrapper:
         self.post_english = os.getenv('SLACK_ENG_URL')
         self.post_spanish = os.getenv('SLACK_ESP_URL')
 
-        return
 
     # Lookup a user's name from their id
     def get_user_name(self, id:str):
