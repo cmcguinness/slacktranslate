@@ -17,6 +17,17 @@ class OpenAIWrapper:
         return trimmed
 
     def call_openai(self, system_prompt, user_prompt):
+
+        # First step, determine moderation status of message and
+        # suppress it if it's not good
+        response = openai.Moderation.create(
+            input=user_prompt
+        )
+        output = response["results"][0]
+        if output['flagged']:
+            return 'This message has failed moderation'
+
+
         try:
             completion = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
