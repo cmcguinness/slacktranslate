@@ -108,6 +108,7 @@ class SlackWrapper:
         oai = OpenAIWrapper()
 
         new_text = oai.to_language(to_lang, text)
+        print(image, flush=True)
         self.post_text2(dest_channel, new_text, user, image)
 
     # Handle an event notification from slack
