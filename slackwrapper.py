@@ -77,7 +77,7 @@ class SlackWrapper:
     def post_text2(self, channel, text, user=None):
         # headers = {'content-type': 'application/json'}
 
-        payload = {'token': self.slack_token, 'text': text}
+        payload = {'token': self.slack_token, 'text': text, 'channel': channel}
         if user is not None:
             payload['username'] = user
 
