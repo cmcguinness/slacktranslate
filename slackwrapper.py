@@ -49,7 +49,7 @@ class SlackWrapper:
         if 'profile' in data['user']:
             profile = data['user']['profile']
             if 'image_original' in profile:
-                image = profile['image_origina']
+                image = profile['image_original']
             if 'image_48' in profile:
                 image = profile['image_48']
 
