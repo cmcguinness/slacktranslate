@@ -99,7 +99,6 @@ class SlackWrapper:
     def do_translate(self, to_lang, text, user, dest_channel):
         text = self.expand_users(text)
 
-        user = None
         image = None
 
         if user is not None:
@@ -108,7 +107,7 @@ class SlackWrapper:
         oai = OpenAIWrapper()
 
         new_text = oai.to_language(to_lang, text)
-        print(image, flush=True)
+
         self.post_text2(dest_channel, new_text, user, image)
 
     # Handle an event notification from slack
