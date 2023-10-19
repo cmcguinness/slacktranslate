@@ -121,8 +121,13 @@ class SlackWrapper:
         if c not in [self.channel_1_id, self.channel_2_id]:
             return ''
 
+        # Filter out non-user messages
         if 'user' not in event:
             # system message
+            return ''
+
+        # Filter out bot messages (like ours) posing as users
+        if 'bot_id' in event:
             return ''
 
         # Make sure there's something to translate
