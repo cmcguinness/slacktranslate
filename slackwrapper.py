@@ -74,6 +74,18 @@ class SlackWrapper:
 
         return r    # Not that anyone cares...
 
+    def post_text2(self, channel, text, user=None):
+        # headers = {'content-type': 'application/json'}
+
+        payload = {'token': self.slack_token, 'text': text}
+        if user is not None:
+            payload['username'] = user
+
+        r = requests.post('https://slack.com/api/chat.postMessage', data=payload)
+
+
+        return r  # Not that anyone cares...
+
     # This runs in the background so we can respond to slack quickly
     def do_translate(self, to_lang, text, user):
         text = self.expand_users(text)
@@ -93,7 +105,8 @@ class SlackWrapper:
             new_text = oai.to_spanish(text)
             if user is not None:
                 new_text = f"_{user} dijo:_\n" + new_text
-            self.post_text(self.post_spanish, new_text, user)
+            # self.post_text(self.post_spanish, new_text, user)
+            self.post_text2(self.channel_spanish, new_text, user)
 
     # Handle an event notification from slack
     # Because the call to open
