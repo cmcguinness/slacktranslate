@@ -63,10 +63,12 @@ class SlackWrapper:
 
 
     @staticmethod
-    def post_text(url, text):
+    def post_text(url, text, user=None):
         headers = { 'content-type': 'application/json' }
 
         data = { 'text': text }
+        if user is not None:
+            data['username'] = user
 
         r = requests.post(url, data=json.dumps(data), headers=headers)
 
@@ -85,13 +87,13 @@ class SlackWrapper:
             new_text = oai.to_english(text)
             if user is not None:
                 new_text = f"_{user} said:_\n" + new_text
-            self.post_text(self.post_english, new_text)
+            self.post_text(self.post_english, new_text, user)
 
         else:
             new_text = oai.to_spanish(text)
             if user is not None:
                 new_text = f"_{user} dijo:_\n" + new_text
-            self.post_text(self.post_spanish, new_text)
+            self.post_text(self.post_spanish, new_text, user)
 
     # Handle an event notification from slack
     # Because the call to open
