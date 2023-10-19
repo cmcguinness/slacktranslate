@@ -33,7 +33,7 @@ class SlackWrapper:
         payload = {'token': self.slack_token, 'user': id}
         print(self.slack_token[:10], flush=True)
         resp = requests.post('https://slack.com/api/users.info', data=payload)
-        print(resp, flush=True)
+        print(resp.text, flush=True)
         data = json.loads(resp.content)
         if 'error' in data:
             print(f'get_user_name({id}): Error {data["error"]}', flush=True)
