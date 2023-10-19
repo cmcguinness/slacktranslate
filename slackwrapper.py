@@ -46,6 +46,9 @@ class SlackWrapper:
         if 'name' in data['user']:
             name = data['user']['name']
 
+        if 'display_name' in data['user']:
+            name = data['user']['display_name']
+
         if 'profile' in data['user']:
             profile = data['user']['profile']
             if 'image_original' in profile:
