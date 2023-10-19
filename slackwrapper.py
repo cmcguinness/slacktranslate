@@ -29,7 +29,7 @@ class SlackWrapper:
 
 
     # Lookup a user's name from their id
-    def get_user_name(self, id:str):
+    def get_user_name_image(self, id:str):
         payload = {'token': self.slack_token, 'user': id}
         print(self.slack_token[:10], flush=True)
         resp = requests.post('https://slack.com/api/users.info', data=payload)
@@ -37,9 +37,28 @@ class SlackWrapper:
         data = json.loads(resp.content)
         if 'error' in data:
             print(f'get_user_name({id}): Error {data["error"]}', flush=True)
-        if 'user' in data and 'name' in data['user']:
-            return data['user']['name']
-        return '-system-'
+        if 'user' not in data:
+            return '-unknown-', ''
+
+        name = '-unknown-'
+        image = ''
+
+        if 'name' in data['user']:
+            name = data['user']['name']
+
+        if 'profile' in data['user']:
+            profile = data['user']['profile']
+            if 'image_original' in profile:
+                image = profile['image_origina']
+            if 'image_48' in profile:
+                image = profile['image_48']
+
+        return name, image
+
+    def get_user_name(self, id:str):
+        name, image = self.get_user_name_image(id)
+        return name
+
 
     # Take a line of text with 0 or more embedded <@id> in it and expand the
     # ids to user names
@@ -70,16 +89,21 @@ class SlackWrapper:
         if user is not None:
             data['username'] = user
 
+
         r = requests.post(url, data=json.dumps(data), headers=headers)
 
         return r    # Not that anyone cares...
 
-    def post_text2(self, channel, text, user=None):
+    def post_text2(self, channel, text, user=None, image=None):
         # headers = {'content-type': 'application/json'}
 
         payload = {'token': self.slack_token, 'text': text, 'channel': channel}
+
         if user is not None:
             payload['username'] = user
+
+        if image is not None and image != '':
+            payload['icon_url'] = image
 
         r = requests.post('https://slack.com/api/chat.postMessage', data=payload)
         print('postMessage: ',r.status_code, flush=True)
@@ -92,22 +116,17 @@ class SlackWrapper:
         text = self.expand_users(text)
 
         if user is not None:
-            user = self.get_user_name(user)
+            user, image = self.get_user_name_image(user)
 
         oai = OpenAIWrapper()
 
         if to_lang == 'english':
             new_text = oai.to_english(text)
-            if user is not None:
-                new_text = f"_{user} said:_\n" + new_text
-            self.post_text(self.post_english, new_text, user)
+            self.post_text2(self.channel_english, new_text, user, image)
 
         else:
             new_text = oai.to_spanish(text)
-            if user is not None:
-                new_text = f"_{user} dijo:_\n" + new_text
-            # self.post_text(self.post_spanish, new_text, user)
-            self.post_text2(self.channel_spanish, new_text, user)
+            self.post_text2(self.channel_spanish, new_text, user, image)
 
     # Handle an event notification from slack
     # Because the call to open
