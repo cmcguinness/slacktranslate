@@ -20,11 +20,11 @@ class SlackWrapper:
     #   Init is responsible for fetching the environment variables that have
     #   API keys, endpoints, and channel ids for our particular org
     def __init__(self):
-        self.channel_english = os.getenv('SLACK_ENG_CHAN_ID')
-        self.channel_spanish = os.getenv('SLACK_ESP_CHAN_ID')
+        self.channel_1_id = os.getenv('SLACK_1_CHAN_ID')
+        self.channel_1_lang = os.getenv('SLACK_1_LANG')
+        self.channel_2_id = os.getenv('SLACK_2_CHAN_ID')
+        self.channel_2_lang = os.getenv('SLACK_2_LANG')
         self.slack_token = os.getenv('SLACK_TOKEN')
-        self.post_english = os.getenv('SLACK_ENG_URL')
-        self.post_spanish = os.getenv('SLACK_ESP_URL')
         self.slack_verification = os.getenv('SLACK_VERIFY')
 
 
@@ -80,23 +80,7 @@ class SlackWrapper:
         result = result + text
         return result
 
-
-    @staticmethod
-    def post_text(url, text, user=None):
-        headers = { 'content-type': 'application/json' }
-
-        data = { 'text': text }
-        if user is not None:
-            data['username'] = user
-
-
-        r = requests.post(url, data=json.dumps(data), headers=headers)
-
-        return r    # Not that anyone cares...
-
     def post_text2(self, channel, text, user=None, image=None):
-        # headers = {'content-type': 'application/json'}
-
         payload = {'token': self.slack_token, 'text': text, 'channel': channel}
 
         if user is not None:
@@ -112,21 +96,19 @@ class SlackWrapper:
         return r  # Not that anyone cares...
 
     # This runs in the background so we can respond to slack quickly
-    def do_translate(self, to_lang, text, user):
+    def do_translate(self, to_lang, text, user, dest_channel):
         text = self.expand_users(text)
+
+        user = None
+        image = None
 
         if user is not None:
             user, image = self.get_user_name_image(user)
 
         oai = OpenAIWrapper()
 
-        if to_lang == 'english':
-            new_text = oai.to_english(text)
-            self.post_text2(self.channel_english, new_text, user, image)
-
-        else:
-            new_text = oai.to_spanish(text)
-            self.post_text2(self.channel_spanish, new_text, user, image)
+        new_text = oai.to_language(to_lang, text)
+        self.post_text2(dest_channel, new_text, user, image)
 
     # Handle an event notification from slack
     # Because the call to open
@@ -136,7 +118,7 @@ class SlackWrapper:
 
         # We may get a lot more traffic than we'd like, so make sure
         # it's coming from the channels we're interested in
-        if c not in [self.channel_english, self.channel_spanish]:
+        if c not in [self.channel_1_id, self.channel_2_id]:
             return ''
 
         if 'user' not in event:
@@ -147,9 +129,10 @@ class SlackWrapper:
         if 'text' not in event or len(event['text'].strip()) == 0:
             return ''
 
-        to_language = ['english', 'spanish'][c != self.channel_spanish]
+        to_language = [self.channel_1_lang, self.channel_2_lang][c != self.channel_2_id]
+        to_channel =  [self.channel_1_id, self.channel_2_id][c != self.channel_2_id]
 
-        th = Thread(target=self.do_translate, args=(to_language, event['text'], event['user']))
+        th = Thread(target=self.do_translate, args=(to_language, event['text'], event['user'], to_channel))
         th.start()
         return ''
 
