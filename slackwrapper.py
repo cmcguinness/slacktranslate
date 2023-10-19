@@ -82,7 +82,8 @@ class SlackWrapper:
             payload['username'] = user
 
         r = requests.post('https://slack.com/api/chat.postMessage', data=payload)
-        print(r, flush=True)
+        print('postMessage: ',r.status_code, flush=True)
+        print(r.text, flush=True)
 
         return r  # Not that anyone cares...
 
