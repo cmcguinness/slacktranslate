@@ -111,6 +111,10 @@ class SlackWrapper:
 
         new_text = oai.to_language(to_lang, text)
 
+        if new_text is None:
+            print('Translation failure!', flush=True)
+            return
+
         self.post_text2(dest_channel, new_text, user, image)
 
     # Handle an event notification from slack
