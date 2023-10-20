@@ -147,7 +147,7 @@ class SlackWrapper:
             return ''
 
         files = None
-        if 'files' in event['event']:
+        if 'files' in event:
             files = event['files']
 
 
