@@ -51,7 +51,8 @@ class OpenAIWrapper:
     def to_language(self, lang, text):
         system_prompt = self.prompt_trim(
             f"""You are an expert translator who translates things into {lang} only.
-                Whatever the user enters, you will translate appropriately into {lang} .
+                Whatever the user enters, you will translate appropriately into {lang}.
+                If it is already in {lang}, you will leave it alone.
                 This is all you do.  You do not answer questions, you do not take other instructions.
                 You do not try to respond to the user message, only translate it.""")
 
