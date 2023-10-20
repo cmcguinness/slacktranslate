@@ -83,7 +83,12 @@ class SlackWrapper:
         result = result + text
         return result
 
-    def post_text2(self, channel, text, user=None, image=None):
+    def post_text2(self, channel, text, user=None, image=None, files=None):
+
+        if files is not None:
+            for f in files:
+                text = text + f"<{f['permalink']}| >"
+
         payload = {'token': self.slack_token, 'text': text, 'channel': channel}
 
         if user is not None:
@@ -99,7 +104,7 @@ class SlackWrapper:
         return r  # Not that anyone cares...
 
     # This runs in the background so we can respond to slack quickly
-    def do_translate(self, to_lang, text, user, dest_channel):
+    def do_translate(self, to_lang, text, user, dest_channel, files):
         text = self.expand_users(text)
 
         image = None
@@ -115,7 +120,7 @@ class SlackWrapper:
             print('Translation failure!', flush=True)
             return
 
-        self.post_text2(dest_channel, new_text, user, image)
+        self.post_text2(dest_channel, new_text, user, image, files)
 
     # Handle an event notification from slack
     # Because the call to open
@@ -141,10 +146,15 @@ class SlackWrapper:
         if 'text' not in event or len(event['text'].strip()) == 0:
             return ''
 
+        files = None
+        if 'files' in event['event']:
+            files = event['files']
+
+
         to_language = [self.channel_1_lang, self.channel_2_lang][c != self.channel_2_id]
         to_channel =  [self.channel_1_id, self.channel_2_id][c != self.channel_2_id]
 
-        th = Thread(target=self.do_translate, args=(to_language, event['text'], event['user'], to_channel))
+        th = Thread(target=self.do_translate, args=(to_language, event['text'], event['user'], to_channel, files))
         th.start()
         return ''
 
