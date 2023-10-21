@@ -87,7 +87,7 @@ class SlackWrapper:
 
         if files is not None:
             for f in files:
-                text = text + f" <{f['permalink']}|{f['title']}>"
+                text = text + f" <{f['permalink']} | {f['title']}>"
 
         print(text, flush=True)
 
