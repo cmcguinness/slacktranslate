@@ -33,7 +33,7 @@ class SlackWrapper:
         payload = {'token': self.slack_token, 'user': id}
         print(self.slack_token[:10], flush=True)
         resp = requests.post('https://slack.com/api/users.info', data=payload)
-        print(resp.text, flush=True)
+        # print(resp.text, flush=True)
         data = json.loads(resp.content)
         if 'error' in data:
             print(f'get_user_name({id}): Error {data["error"]}', flush=True)
@@ -88,6 +88,8 @@ class SlackWrapper:
         if files is not None:
             for f in files:
                 text = text + f"<{f['permalink']}| >"
+
+        print(text, flush=True)
 
         payload = {'token': self.slack_token, 'text': text, 'channel': channel}
 
