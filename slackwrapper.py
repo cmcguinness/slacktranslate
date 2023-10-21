@@ -87,7 +87,7 @@ class SlackWrapper:
 
         if files is not None:
             for f in files:
-                text = text + f" <{f['permalink']}| >"
+                text = text + f"<{f['permalink']} | >"
 
 
         payload = {'token': self.slack_token, 'text': text, 'channel': channel}
