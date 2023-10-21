@@ -87,7 +87,7 @@ class SlackWrapper:
 
         if files is not None:
             for f in files:
-                text = text + f" <{f['permalink']} | {f['title']}>"
+                text = text + f" <{f['permalink']}| >"
 
 
         payload = {'token': self.slack_token, 'text': text, 'channel': channel}
@@ -100,8 +100,8 @@ class SlackWrapper:
 
         print('---')
         print(payload['text'])
-        print('---', flush=True
-              )
+        print('---', flush=True)
+
         r = requests.post('https://slack.com/api/chat.postMessage', data=payload)
         # print('postMessage: ',r.status_code, flush=True)
         # print(r.text, flush=True)
