@@ -98,7 +98,6 @@ class SlackWrapper:
         if image is not None and image != '':
             payload['icon_url'] = image
 
-        print('---')
         print(payload['text'])
         print('---', flush=True)
 
