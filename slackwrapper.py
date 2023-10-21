@@ -86,8 +86,9 @@ class SlackWrapper:
     def post_text2(self, channel, text, user=None, image=None, files=None):
 
         if files is not None:
+            text += '\n\n'
             for f in files:
-                text = text + f"<{f['permalink']} | >"
+                text = text + f"<{f['permalink']} | {f['name']}>"
 
 
         payload = {'token': self.slack_token, 'text': text, 'channel': channel}
