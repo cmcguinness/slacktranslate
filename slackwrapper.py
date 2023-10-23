@@ -148,6 +148,10 @@ class SlackWrapper:
         if 'bot_id' in event:
             return ''
 
+        # Filter out channel join messages
+        if 'subtype' in event and event['subtype'] == 'channel_join':
+            return ''
+
         # Make sure there's something to translate
         if 'text' not in event or len(event['text'].strip()) == 0:
             return ''
