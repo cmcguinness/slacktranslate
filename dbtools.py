@@ -15,14 +15,16 @@ class DBTools:
 
 
     def add_post(self, from_id, to_id):
+
         print(f'add_post({from_id}, {to_id})', flush=True)
         cur = self.connection.cursor()
         cur.execute("INSERT INTO posts VALUES (?,?)", (from_id, to_id))
+        cur.execute("INSERT INTO posts VALUES (?,?)", (to_id, from_id))
         cur.close()
         self.connection.commit()
 
 
-    def source_to_trans(self, to_id):
+    def map_to_other(self, to_id):
         cur = self.connection.cursor()
         cur.execute("SELECT from_id FROM posts where to_id = ?", (to_id,))
         row = cur.fetchone()
@@ -30,13 +32,6 @@ class DBTools:
             return None
         return row[0]
 
-    def trans_to_source(self, from_id):
-        cur = self.connection.cursor()
-        cur.execute("SELECT to_id FROM posts where from_id = ?", (from_id,))
-        row = cur.fetchone()
-        if row is None:
-            return None
-        return row[0]
 
     def dump_db(self):
         cur = self.connection.cursor()
@@ -58,6 +53,6 @@ if __name__ == '__main__':
     db = DBTools()
     db.add_post('1', '2')
     db.add_post('3','4')
-    print(db.source_to_trans('4'))
-    print(db.source_to_trans('7'))
+    print(db.map_to_other('4'))
+    print(db.map_to_other('7'))
     print(db.dump_db())

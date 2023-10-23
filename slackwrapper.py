@@ -94,7 +94,7 @@ class SlackWrapper:
         payload = {'token': self.slack_token, 'text': text, 'channel': channel}
 
         if thread_ts is not None:
-            trans_thread_ts = db.source_to_trans(thread_ts)
+            trans_thread_ts = db.map_to_other(thread_ts)
             print(f'source_to_trans({thread_ts}) = {trans_thread_ts}', flush=True)
             if trans_thread_ts is None:
                 text = '(_Reply_): ' + text
