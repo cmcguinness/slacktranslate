@@ -15,7 +15,7 @@ class DBTools:
 
 
     def add_post(self, from_id, to_id):
-        print(f'add_post({from_id}, {to_id}', flush=True)
+        print(f'add_post({from_id}, {to_id})', flush=True)
         cur = self.connection.cursor()
         cur.execute("INSERT INTO posts VALUES (?,?)", (from_id, to_id))
         cur.close()
@@ -38,6 +38,19 @@ class DBTools:
             return None
         return row[0]
 
+    def dump_db(self):
+        cur = self.connection.cursor()
+        cur.execute('SELECT * from posts')
+        rows = cur.fetchall()
+        results = ''
+        for row in rows:
+            for col in row:
+                results += col + ', '
+            results += '\n'
+
+        return results
+
+
 
 
 
@@ -47,3 +60,4 @@ if __name__ == '__main__':
     db.add_post('3','4')
     print(db.source_to_trans('4'))
     print(db.source_to_trans('7'))
+    print(db.dump_db())
