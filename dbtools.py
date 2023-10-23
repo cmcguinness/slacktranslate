@@ -15,6 +15,7 @@ class DBTools:
 
 
     def add_post(self, from_id, to_id):
+        print(f'add_post({from_id}, {to_id}', flush=True)
         cur = self.connection.cursor()
         cur.execute("INSERT INTO posts VALUES (?,?)", (from_id, to_id))
         cur.close()
