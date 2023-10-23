@@ -85,9 +85,6 @@ class SlackWrapper:
     def post_text(self, channel, text, user, image, files, thread_ts, source_ts):
         db = DBTools()
 
-
-
-
         if files is not None:
             text += '\n\n'
             for f in files:
@@ -98,6 +95,7 @@ class SlackWrapper:
 
         if thread_ts is not None:
             trans_thread_ts = db.source_to_trans(thread_ts)
+            print(f'source_to_trans({thread_ts}) = {trans_thread_ts}', flush=True)
             if trans_thread_ts is None:
                 text = '(_Reply_): ' + text
             else:
