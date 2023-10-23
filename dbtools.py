@@ -4,6 +4,11 @@ import os
 class DBTools:
     def __init__(self):
         self.dbroot = os.getenv('DBROOT')
+
+        if self.dbroot is None:
+            print('ERROR: No DBROOT set in environment')
+            return
+
         if not os.path.exists(f'{self.dbroot}/posts.db'):
             self.connection = sqlite3.connect(f'{self.dbroot}/posts.db')
             cur = self.connection.cursor()
