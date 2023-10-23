@@ -158,7 +158,7 @@ class SlackWrapper:
 
         thread_ts = None
         if 'thread_ts' in event:
-            thread_ts = event[' thread_ts']
+            thread_ts = event['thread_ts']
 
 
         to_language = [self.channel_1_lang, self.channel_2_lang][c != self.channel_2_id]
