@@ -27,7 +27,6 @@ class SlackWrapper:
         self.slack_token = os.getenv('SLACK_TOKEN')
         self.slack_verification = os.getenv('SLACK_VERIFY')
 
-
     # Lookup a user's name from their id
     def get_user_name_image(self, id:str):
         payload = {'token': self.slack_token, 'user': id}
@@ -62,7 +61,6 @@ class SlackWrapper:
         name, image = self.get_user_name_image(id)
         return name
 
-
     # Take a line of text with 0 or more embedded <@id> in it and expand the
     # ids to user names
     def expand_users(self, text):
@@ -88,8 +86,8 @@ class SlackWrapper:
         if files is not None:
             text += '\n\n'
             for f in files:
-                text = text + f"<{f['permalink']} | {f['name']}>"
-
+                if 'permalink' in f and 'name' in f:
+                    text = text + f"<{f['permalink']} | {f['name']}>"
 
         payload = {'token': self.slack_token, 'text': text, 'channel': channel}
 
