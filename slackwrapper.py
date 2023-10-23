@@ -14,6 +14,7 @@ import requests
 import json
 from openaiwrapper import OpenAIWrapper
 from threading import Thread
+from dbtools import DBTools
 
 class SlackWrapper:
 
@@ -81,10 +82,8 @@ class SlackWrapper:
         result = result + text
         return result
 
-    def post_text2(self, channel, text, user=None, image=None, files=None, thread_ts=None):
-
-        if thread_ts is not None:
-            text = '(_Reply_): ' + text
+    def post_text(self, channel, text, user, image, files, thread_ts, source_ts):
+        db = DBTools()
 
         if files is not None:
             text += '\n\n'
@@ -93,6 +92,14 @@ class SlackWrapper:
                     text = text + f"<{f['permalink']} | {f['name']}>"
 
         payload = {'token': self.slack_token, 'text': text, 'channel': channel}
+
+        if thread_ts is not None:
+            trans_thread_ts = db.map_to_other(thread_ts)
+            print(f'source_to_trans({thread_ts}) = {trans_thread_ts}', flush=True)
+            if trans_thread_ts is None:
+                text = '(_Reply_): ' + text
+            else:
+                payload['thread_ts'] = trans_thread_ts
 
         if user is not None:
             payload['username'] = user
@@ -104,13 +111,13 @@ class SlackWrapper:
         print('---', flush=True)
 
         r = requests.post('https://slack.com/api/chat.postMessage', data=payload)
-        # print('postMessage: ',r.status_code, flush=True)
-        # print(r.text, flush=True)
 
-        return r  # Not that anyone cares...
+        resp = r.json()
+
+        db.add_post(source_ts, resp['ts'])
 
     # This runs in the background so we can respond to slack quickly
-    def do_translate(self, to_lang, text, user, dest_channel, files,  thread_ts):
+    def do_translate(self, to_lang, text, user, dest_channel, files,  thread_ts, source_ts):
         text = self.expand_users(text)
 
         image = None
@@ -126,7 +133,7 @@ class SlackWrapper:
             print('Translation failure!', flush=True)
             return
 
-        self.post_text2(dest_channel, new_text, user, image, files,  thread_ts)
+        self.post_text(dest_channel, new_text, user, image, files, thread_ts, source_ts)
 
     # Handle an event notification from slack
     # Because the call to open
@@ -164,11 +171,13 @@ class SlackWrapper:
         if 'thread_ts' in event:
             thread_ts = event['thread_ts']
 
+        source_ts = event['ts']
+
 
         to_language = [self.channel_1_lang, self.channel_2_lang][c != self.channel_2_id]
         to_channel =  [self.channel_1_id, self.channel_2_id][c != self.channel_2_id]
 
-        th = Thread(target=self.do_translate, args=(to_language, event['text'], event['user'], to_channel, files,  thread_ts))
+        th = Thread(target=self.do_translate, args=(to_language, event['text'], event['user'], to_channel, files,  thread_ts, source_ts))
         th.start()
         return ''
 

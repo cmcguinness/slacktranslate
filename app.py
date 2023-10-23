@@ -1,12 +1,18 @@
 from flask import Flask, request, abort
 from slackwrapper import SlackWrapper
 import json
+from dbtools import DBTools
 
 app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
     return 'These are not the droids you are looking for'
+
+@app.route('/dump')
+def dumper():
+    db = DBTools()
+    return '<PRE>' + db.dump_db() + '</PRE>'
 
 @app.route('/events', methods=['POST', 'GET'])
 def slack_events():
