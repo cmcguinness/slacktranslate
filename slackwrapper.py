@@ -13,6 +13,7 @@ import os
 import requests
 import json
 from openaiwrapper import OpenAIWrapper
+from hfwrapper import HFWrapper
 from threading import Thread
 from dbtools import DBTools
 
@@ -27,6 +28,7 @@ class SlackWrapper:
         self.channel_2_lang = os.getenv('SLACK_2_LANG')
         self.slack_token = os.getenv('SLACK_TOKEN')
         self.slack_verification = os.getenv('SLACK_VERIFY')
+        self.backend = os.getenv('BACKEND')
 
     # Lookup a user's name from their id
     def get_user_name_image(self, id:str):
@@ -97,7 +99,7 @@ class SlackWrapper:
             trans_thread_ts = db.map_to_other(thread_ts)
             print(f'source_to_trans({thread_ts}) = {trans_thread_ts}', flush=True)
             if trans_thread_ts is None:
-                text = '(_Reply_): ' + text
+                payload['text'] = '(_Reply_): ' + text
             else:
                 payload['thread_ts'] = trans_thread_ts
 
@@ -125,9 +127,12 @@ class SlackWrapper:
         if user is not None:
             user, image = self.get_user_name_image(user)
 
-        oai = OpenAIWrapper()
-
-        new_text = oai.to_language(to_lang, text)
+        if self.backend == 'HF':
+            hf = HFWrapper()
+            new_text = hf.to_language(to_lang, text)
+        else:
+            oai = OpenAIWrapper()
+            new_text = oai.to_language(to_lang, text)
 
         if new_text is None:
             print('Translation failure!', flush=True)

@@ -12,7 +12,7 @@ oauth_config:
       - users:read
 settings:
   event_subscriptions:
-    request_url: https://YOUR-SUBDOMAIN-GOES-HERE.herokuapp.com/events
+    request_url: https://YOUR-DOMAIN-GOES-HERE/events
     bot_events:
       - message.channels
   org_deploy_enabled: false
